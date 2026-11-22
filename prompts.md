@@ -44,3 +44,11 @@ Then fix the biggest problems it found: run /impeccable typeset on the dashboard
 Keep the design system and all features exactly as they are.
 
 Work autonomously. Do not declare completion until polish is done on every page.
+
+---
+
+Use the baseline-ui skill: [https://github.com/ibelick/ui-skills](https://github.com/ibelick/ui-skills). Review every component in Streakly against its rules and fix anything that breaks them.
+
+Keep the design system, the layout and all features exactly as they are.
+
+Work autonomously. List what you changed when you are done.

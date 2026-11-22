@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, CalendarDays, ChartNoAxesColumnIncreasing, Check, Flame, Plus, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { sampleHabits } from './habits.js';
-import { Brand, CheckMark, Dialog, HabitIcon } from './ui.jsx';
+import { Brand, CheckMark, cn, Dialog, HabitIcon } from './ui.jsx';
 
 const features = [
   { Icon: CalendarDays, color: 'orange', title: 'Make it yours', description: 'Start with a habit you can do today. Pick an icon and set a weekly goal that fits your life.' },
@@ -101,7 +101,7 @@ export default function Landing({ updateProfile }) {
             <div className="feature-strip grid md:grid-cols-3">
               {features.map(({ Icon, color, title, description }) => (
                 <article className="feature-card" key={title}>
-                  <span className={`feature-icon icon-${color}`}><Icon size={23} strokeWidth={1.9} /></span>
+                  <span className={cn('feature-icon', `icon-${color}`)}><Icon size={23} strokeWidth={1.9} /></span>
                   <h3>{title}</h3><p>{description}</p>
                 </article>
               ))}
@@ -139,7 +139,7 @@ export default function Landing({ updateProfile }) {
         </div>
       </footer>
 
-      {dialog === 'signup' && <SignUp onClose={close} onSignUp={(profile) => { updateProfile(profile); navigate('/dashboard'); }} />}
+      {dialog === 'signup' && <SignUp onClose={close} onSignUp={(profile) => { updateProfile(profile, 'dashboard/signup'); navigate('/dashboard'); }} />}
       {dialog === 'pro' && <Dialog title="Streakly Pro" description="Pro is in development. You can use the Free plan today to track your habits, streaks, and 12 weeks of progress." onClose={close}><button className="button primary w-full mt-5" onClick={start}>Start for free</button></Dialog>}
     </div>
   );

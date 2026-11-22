@@ -1,6 +1,12 @@
 import { useLayoutEffect, useRef } from 'react';
+import { clsx } from 'clsx';
 import { Apple, BookOpen, Check, Coffee, Droplet, Dumbbell, Flame, Moon, NotebookPen, Sprout, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...classes) {
+  return twMerge(clsx(classes));
+}
 
 export const habitIcons = {
   water: { label: 'Water', Icon: Droplet, color: 'blue' },
@@ -20,11 +26,15 @@ export function Brand({ linked = true }) {
 
 export function HabitIcon({ name }) {
   const { Icon, color } = habitIcons[name] ?? habitIcons.sprout;
-  return <span className={`habit-icon icon-${color}`} aria-hidden="true"><Icon size={20} strokeWidth={1.9} /></span>;
+  return <span className={cn('habit-icon', `icon-${color}`)} aria-hidden="true"><Icon size={20} strokeWidth={1.9} /></span>;
 }
 
 export function CheckMark({ checked }) {
-  return <span className={`check-mark${checked ? ' is-checked' : ''}`} aria-hidden="true">{checked && <Check size={15} strokeWidth={2.8} />}</span>;
+  return <span className={cn('check-mark', checked && 'is-checked')} aria-hidden="true">{checked && <Check size={15} strokeWidth={2.8} />}</span>;
+}
+
+export function StorageError({ fixed = false }) {
+  return <p className={cn('storage-error', fixed && 'storage-error-fixed')} role="status">Browser storage is unavailable. Changes will be lost when you leave this page.</p>;
 }
 
 export function Dialog({ title, description, onClose, children }) {
@@ -32,8 +42,8 @@ export function Dialog({ title, description, onClose, children }) {
 
   useLayoutEffect(() => {
     const dialog = ref.current;
+    dialog.querySelector('input')?.setAttribute('autofocus', '');
     dialog.showModal();
-    dialog.querySelector('input')?.focus();
     return () => dialog.close();
   }, []);
 

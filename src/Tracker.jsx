@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { Composite, CompositeItem, CompositeProvider, CompositeRow } from '@ariakit/react/composite';
 import { ArrowUpRight, Bell, CalendarDays, Check, CircleCheck, Flame, LayoutGrid, Moon, Plus, Settings as SettingsIcon, Sun, UserRound } from 'lucide-react';
 import { Link, NavLink, Outlet, useOutletContext } from 'react-router-dom';
 import { activityWeeks, currentStreak, dateKey, weeklyProgress } from './habits.js';
-import { Brand, CheckMark, Dialog, HabitIcon, habitIcons } from './ui.jsx';
+import { Brand, CheckMark, cn, Dialog, HabitIcon, habitIcons, StorageError } from './ui.jsx';
 
 const format = (date, options) => date.toLocaleDateString('en-US', options);
 
@@ -57,12 +58,12 @@ function AddHabit({ onClose, onAdd }) {
   );
 }
 
-function HabitList({ habits, completions, week, onToggle }) {
+function HabitList({ habits, completions, week, onToggle, storageError }) {
   const count = completions.length;
   return (
     <section className="panel habits-panel" aria-labelledby="habits-title">
       <div className="panel-heading habits-heading">
-        <div><h2 id="habits-title">Today’s habits</h2><p>Make a little time for each one.</p></div>
+        <div><h2 id="habits-title">Today’s habits</h2><p>{habits.length ? 'Make a little time for each one.' : 'Use Add habit to start your checklist.'}</p></div>
         <span className="count-pill"><CircleCheck size={15} /> {count} of {habits.length} done</span>
       </div>
       <progress className="habit-progress" max={habits.length || 1} value={count} aria-label="Habits completed today" />
@@ -83,6 +84,7 @@ function HabitList({ habits, completions, week, onToggle }) {
                 <input type="checkbox" className="sr-only" aria-label={habit.name} checked={done} onChange={() => onToggle(habit.id)} />
                 <CheckMark checked={done} />
               </label>
+              {storageError === `dashboard/check-in/${habit.id}` && <StorageError />}
             </li>
           );
         })}
@@ -107,15 +109,24 @@ function StreakCard({ streak }) {
 function WeeklyChart({ week, todayKey }) {
   const total = week.reduce((sum, day) => sum + day.count, 0);
   const max = Math.max(5, ...week.map((day) => day.count));
+  const gridId = useId();
   return (
     <section className="panel weekly-panel" aria-labelledby="week-title">
       <div className="panel-heading"><div><h2 id="week-title">This week</h2><p>{total} {total === 1 ? 'check-in' : 'check-ins'} since Monday</p></div><CalendarDays size={19} className="subtle-icon" /></div>
-      <ul className="weekly-chart" aria-label="Daily habit check-ins" style={{ '--chart-unit': `${100 / max}%` }}>
+      <svg className="sr-only" aria-hidden="true">
+        <pattern id={gridId} width="1" height={85 / max} patternUnits="userSpaceOnUse">
+          <rect width="1" height="1" fill="var(--line)" />
+        </pattern>
+      </svg>
+      <ul className="weekly-chart" aria-label="Daily habit check-ins">
         {week.map(({ date, key, count, future }) => (
-          <li key={key} className={key === todayKey ? 'chart-today' : ''} aria-label={`${format(date, { weekday: 'long' })}: ${future ? 'Upcoming' : count}`}>
+          <li key={key} className={cn(key === todayKey && 'chart-today')} aria-label={`${format(date, { weekday: 'long' })}: ${future ? 'Upcoming' : count}`}>
             <span className="chart-number" aria-hidden="true">{future ? '·' : count}</span>
             <div className="bar-track" aria-hidden="true">
-              <span className="bar-fill" style={{ height: `${count / max * 100}%` }} />
+              <svg className="bar-grid" viewBox="0 0 1 85" preserveAspectRatio="none">
+                <rect width="1" height="85" fill={`url(#${gridId})`} />
+              </svg>
+              <span className="bar-fill" style={{ '--bar-height': `${count / max * 100}%` }} />
             </div>
             <span className="chart-label" aria-hidden="true">{format(date, { weekday: 'short' })}</span>
           </li>
@@ -132,17 +143,6 @@ function heatLevel(count) {
 function activityLabel(day) {
   const count = day.count === 1 ? '1 check-in' : `${day.count} check-ins`;
   return `${format(day.date, { month: 'short', day: 'numeric' })}: ${day.future ? 'Upcoming' : count}`;
-}
-
-function navigateCalendar(event) {
-  const cell = event.currentTarget.closest('td');
-  const row = cell.parentElement;
-  const body = row.parentElement;
-  const offsets = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] };
-  const offset = offsets[event.key];
-  if (!offset) return;
-  event.preventDefault();
-  body.rows[row.sectionRowIndex + offset[0]]?.cells[cell.cellIndex + offset[1]]?.querySelector('button')?.focus();
 }
 
 function ActivityGrid({ completions, today }) {
@@ -163,32 +163,37 @@ function ActivityGrid({ completions, today }) {
           const showMonth = index === 0 || day.date.getMonth() !== weeks[index - 1][0].date.getMonth();
           return <th key={day.key} scope="col"><span className="sr-only">Week of {format(day.date, { month: 'long', day: 'numeric' })}</span>{showMonth && <span className="month-label" aria-hidden="true">{month}</span>}</th>;
         })}</tr></thead>
-        <tbody>{weeks[0].map(({ date, key }, index) => (
-          <tr key={key}>
-            <th scope="row">{format(date, { weekday: 'short' })}</th>
-            {weeks.map((week) => {
-              const day = week[index];
-              const label = activityLabel(day);
-              return (
-                <td key={day.key} title={label} aria-current={day.key === todayKey ? 'date' : undefined}>
-                  <button type="button" className={`heat-cell ${day.future ? 'future-cell' : `heat-${heatLevel(day.count)}`}`}
-                    aria-label={label} tabIndex={selectedDay.key === day.key ? 0 : -1}
-                    onClick={() => setSelectedKey(day.key)} onFocus={() => setSelectedKey(day.key)} onKeyDown={navigateCalendar} />
-                </td>
-              );
-            })}
-          </tr>
-        ))}</tbody>
+        <CompositeProvider activeId={selectedDay.key} setActiveId={setSelectedKey}>
+          <Composite render={<tbody />}>
+            {weeks[0].map(({ date, key }, index) => (
+              <CompositeRow key={key} render={<tr />}>
+                <th scope="row">{format(date, { weekday: 'short' })}</th>
+                {weeks.map((week) => {
+                  const day = week[index];
+                  const label = activityLabel(day);
+                  return (
+                    <td key={day.key} title={label} aria-current={day.key === todayKey ? 'date' : undefined}>
+                      <CompositeItem id={day.key} tabIndex={0} preventScrollOnKeyDown render={<button type="button" />}
+                        moveOnKeyPress={({ key }) => key.startsWith('Arrow')}
+                        className={cn('heat-cell', day.future ? 'future-cell' : `heat-${heatLevel(day.count)}`)}
+                        aria-label={label} onClick={() => setSelectedKey(day.key)} />
+                    </td>
+                  );
+                })}
+              </CompositeRow>
+            ))}
+          </Composite>
+        </CompositeProvider>
       </table>
       <div className="activity-footer">
         <span>{activityLabel(selectedDay)}</span>
-        <div className="activity-legend" aria-label="Activity scale from fewer to more check-ins"><span>Less</span>{[0, 1, 2, 3, 4].map((level) => <i key={level} className={`heat-${level}`} />)}<span>More</span></div>
+        <div className="activity-legend" aria-label="Activity scale from fewer to more check-ins"><span>Less</span>{[0, 1, 2, 3, 4].map((level) => <i key={level} className={cn(`heat-${level}`)} />)}<span>More</span></div>
       </div>
     </section>
   );
 }
 
-export function Dashboard({ data, today, onToggle, onAdd }) {
+export function Dashboard({ data, today, onToggle, onAdd, storageError }) {
   const [adding, setAdding] = useState(false);
   const day = dateKey(today);
   const completed = data.completions[day] ?? [];
@@ -205,13 +210,14 @@ export function Dashboard({ data, today, onToggle, onAdd }) {
         </div>
         <button className="button primary" onClick={() => setAdding(true)}><Plus size={19} /> Add habit</button>
       </header>
+      {(storageError === 'dashboard/add' || storageError === 'dashboard/signup') && <StorageError />}
 
       {data.profile.notifications && today.getHours() >= 18 && completed.length < data.habits.length && (
         <p className="reminder"><Bell size={18} /> A little reminder: you still have {data.habits.length - completed.length} {data.habits.length - completed.length === 1 ? 'habit' : 'habits'} left today.</p>
       )}
 
       <div className="dashboard-grid">
-        <HabitList habits={data.habits} completions={completed} week={week.map((entry) => data.completions[entry.key] ?? [])} onToggle={(id) => onToggle(day, id)} />
+        <HabitList habits={data.habits} completions={completed} week={week.map((entry) => data.completions[entry.key] ?? [])} onToggle={(id) => onToggle(day, id)} storageError={storageError} />
         <div className="dashboard-summary"><StreakCard streak={currentStreak(data.completions, today)} /><WeeklyChart week={week} todayKey={day} /></div>
         <ActivityGrid completions={data.completions} today={today} />
       </div>
@@ -225,7 +231,7 @@ function ToggleRow({ Icon, field, label, description, profile, updateProfile }) 
     <label className="toggle-row">
       <span className="preference-icon"><Icon size={20} /></span>
       <span className="preference-copy"><strong>{label}</strong><small id={`${field}-description`}>{description}</small></span>
-      <input className="sr-only" type="checkbox" role="switch" checked={profile[field]} aria-label={label} aria-describedby={`${field}-description`} onChange={(event) => updateProfile({ [field]: event.target.checked })} />
+      <input className="sr-only" type="checkbox" role="switch" checked={profile[field]} aria-label={label} aria-describedby={`${field}-description`} onChange={(event) => updateProfile({ [field]: event.target.checked }, `settings/${field}`)} />
       <span className="toggle-track" aria-hidden="true"><i /></span>
     </label>
   );
@@ -263,12 +269,15 @@ export function Settings({ profile, updateProfile, storageError }) {
               <button type="submit" className="button primary">Save changes</button>
               <span className="save-status" role="status">{dirty ? 'Unsaved changes' : saved && !storageError && <><Check size={16} /> Saved</>}</span>
             </div>
+            {storageError === 'settings/profile' && <StorageError />}
           </form>
         </section>
         <section className="panel settings-panel" aria-labelledby="preferences-title">
           <div className="settings-panel-heading"><span className="settings-icon icon-violet"><SettingsIcon size={21} /></span><div><h2 id="preferences-title">Preferences</h2><p>Changes are saved automatically on this device.</p></div></div>
           <ToggleRow Icon={Bell} field="notifications" label="Notifications" description="Show a reminder in the app after 6 pm if you have habits left." profile={profile} updateProfile={updateProfile} />
+          {storageError === 'settings/notifications' && <StorageError />}
           <ToggleRow Icon={profile.darkMode ? Moon : Sun} field="darkMode" label="Dark mode" description="Use a darker theme for your workspace." profile={profile} updateProfile={updateProfile} />
+          {storageError === 'settings/darkMode' && <StorageError />}
         </section>
       </div>
     </div>

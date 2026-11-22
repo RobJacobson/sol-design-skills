@@ -23,7 +23,8 @@ test('landing navigation, pricing preview, and sign-up lead to a populated track
   await expect(page.getByRole('dialog', { name: 'Streakly Pro' })).toBeVisible();
   await page.getByRole('button', { name: 'Close dialog' }).click();
 
-  await page.getByRole('button', { name: 'Start for free', exact: true }).click();
+  await page.getByRole('button', { name: 'Explore Pro' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Start for free' }).click();
   const signup = page.getByRole('dialog');
   await expect(signup.getByRole('textbox', { name: 'Name' })).toBeFocused();
   await signup.getByRole('textbox', { name: 'Name' }).fill('Taylor Reed');
@@ -81,9 +82,14 @@ test('exact calendar counts are available by pointer and with one keyboard tab s
   const calendar = page.getByRole('table');
   const today = calendar.getByRole('button', { name: 'Nov 21: 2 check-ins' });
   await expect(calendar.locator('button[tabindex="0"]')).toHaveCount(1);
-  await today.focus();
+  await page.getByRole('checkbox', { name: 'Wind down by 10 pm' }).press('Tab');
+  await expect(today).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(today).toBeFocused();
   await page.keyboard.press('ArrowDown');
   const next = calendar.getByRole('button', { name: 'Nov 22: Upcoming' });
+  await expect(next).toBeFocused();
+  await page.keyboard.press('ArrowDown');
   await expect(next).toBeFocused();
   await expect(page.locator('.activity-footer')).toContainText('Nov 22: Upcoming');
   await page.keyboard.press('ArrowLeft');
@@ -123,4 +129,54 @@ test('profile, dark mode, and evening reminders persist across navigation and re
   await expect(page.getByRole('heading', { name: 'Hi, Jamie' })).toBeVisible();
   await expect(page.getByText(/you still have 3 habits left today/)).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+});
+
+test('an empty checklist points to the existing Add habit action', async ({ page }) => {
+  await page.goto('/dashboard');
+  await expect(page.getByText('2 of 5 done')).toBeVisible();
+  await page.evaluate(() => {
+    const key = 'streakly-data-v1';
+    const data = JSON.parse(localStorage.getItem(key));
+    localStorage.setItem(key, JSON.stringify({ ...data, habits: [], completions: {} }));
+  });
+  await page.reload();
+  await expect(page.getByText('Use Add habit to start your checklist.')).toBeVisible();
+  await page.getByRole('button', { name: 'Add habit' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+});
+
+test('storage failures are shown next to the action and clear after a successful save', async ({ page }) => {
+  await page.goto('/dashboard');
+  await page.evaluate(() => {
+    window.originalSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = () => { throw new Error('Browser storage is unavailable'); };
+  });
+  await page.getByText('Move for 20 minutes', { exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Today’s habits' }).getByRole('status')).toHaveText(/Browser storage is unavailable/);
+  await expect(page.getByRole('checkbox', { name: 'Move for 20 minutes' })).toBeChecked();
+
+  await page.getByRole('button', { name: 'Add habit' }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('textbox', { name: 'Habit name' }).fill('Drink tea');
+  await dialog.getByRole('button', { name: 'Add habit' }).click();
+  await expect(page.getByRole('status')).toHaveText(/Browser storage is unavailable/);
+  await expect(page.getByRole('region', { name: 'Today’s habits' }).getByRole('status')).toHaveCount(0);
+  await expect(page.getByRole('checkbox', { name: 'Drink tea' })).toBeAttached();
+
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  const profile = page.getByRole('region', { name: 'Profile' });
+  await profile.getByRole('textbox', { name: 'Name' }).fill('Taylor Reed');
+  await profile.getByRole('button', { name: 'Save changes' }).click();
+  await expect(profile.getByText(/Browser storage is unavailable/)).toBeVisible();
+  await expect(profile.getByText('Saved', { exact: true })).toHaveCount(0);
+
+  const preferences = page.getByRole('region', { name: 'Preferences' });
+  await preferences.getByText('Dark mode', { exact: true }).click();
+  await expect(preferences.getByRole('status')).toHaveText(/Browser storage is unavailable/);
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  await page.evaluate(() => { Storage.prototype.setItem = window.originalSetItem; });
+  await profile.getByRole('button', { name: 'Save changes' }).click();
+  await expect(profile.getByRole('status')).toHaveText('Saved');
+  await expect(page.getByText(/Browser storage is unavailable/)).toHaveCount(0);
 });

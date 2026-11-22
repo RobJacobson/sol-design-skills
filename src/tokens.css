@@ -55,6 +55,9 @@
   --space-8: 4rem;
   --radius: 18px;
   --pill: 999px;
+  --z-decoration: -1;
+  --z-focus: 1;
+  --z-notice: 2;
   font-family: var(--body);
   font-variant-numeric: lining-nums tabular-nums;
   font-synthesis: none;
