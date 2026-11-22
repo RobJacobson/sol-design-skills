@@ -103,11 +103,11 @@ function WeeklyChart({ week, todayKey }) {
   return (
     <section className="panel weekly-panel" aria-labelledby="week-title">
       <div className="panel-heading"><div><h2 id="week-title">This week</h2><p>{total} {total === 1 ? 'check-in' : 'check-ins'} since Monday</p></div><CalendarDays size={19} className="subtle-icon" /></div>
-      <ul className="weekly-chart" aria-label="Daily habit check-ins">
+      <ul className="weekly-chart" aria-label="Daily habit check-ins" style={{ '--chart-unit': `${100 / max}%` }}>
         {week.map(({ date, key, count, future }) => (
           <li key={key} className={key === todayKey ? 'chart-today' : ''} aria-label={`${format(date, { weekday: 'long' })}: ${future ? 'Upcoming' : count}`}>
+            <span className="chart-number" aria-hidden="true">{future ? '·' : count}</span>
             <div className="bar-track" aria-hidden="true">
-              <span className="chart-number">{future ? '·' : count}</span>
               <span className="bar-fill" style={{ height: `${count / max * 100}%` }} />
             </div>
             <span className="chart-label" aria-hidden="true">{format(date, { weekday: 'short' })}</span>
@@ -125,6 +125,7 @@ function heatLevel(count) {
 function ActivityGrid({ completions, today }) {
   const weeks = activityWeeks(completions, today);
   const activeDays = weeks.flat().filter((day) => day.count > 0).length;
+  const todayKey = dateKey(today);
 
   return (
     <section className="panel activity-panel" aria-labelledby="activity-title">
@@ -141,7 +142,7 @@ function ActivityGrid({ completions, today }) {
             {weeks.map((week) => {
               const day = week[index];
               const label = `${format(day.date, { month: 'short', day: 'numeric' })}: ${day.future ? 'Upcoming' : `${day.count} ${day.count === 1 ? 'check-in' : 'check-ins'}`}`;
-              return <td key={day.key} title={label}><span className={`heat-cell ${day.future ? 'future-cell' : `heat-${heatLevel(day.count)}`}`}><span className="sr-only">{label}</span></span></td>;
+              return <td key={day.key} title={label} aria-current={day.key === todayKey ? 'date' : undefined}><span className={`heat-cell ${day.future ? 'future-cell' : `heat-${heatLevel(day.count)}`}`}><span className="sr-only">{label}</span></span></td>;
             })}
           </tr>
         ))}</tbody>
@@ -163,7 +164,7 @@ export function Dashboard({ data, today, onToggle, onAdd }) {
       <header className="workspace-heading">
         <div>
           <p className="workspace-date"><CalendarDays size={16} /> {format(today, { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-          <h1>Hi, {firstName} <span aria-hidden="true">✳</span></h1>
+          <h1>Hi, {firstName}</h1>
           <p className="workspace-description">What small win will you make time for today?</p>
         </div>
         <button className="button primary" onClick={() => setAdding(true)}><Plus size={19} /> Add habit</button>

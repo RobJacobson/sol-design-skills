@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import '@fontsource-variable/dm-sans';
-import '@fontsource-variable/manrope';
+import '@fontsource/instrument-serif/400.css';
+import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
 import './styles.css';
 import Landing from './Landing.jsx';
 import { Dashboard, Settings, TrackerLayout } from './Tracker.jsx';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, CalendarDays, ChartNoAxesColumnIncreasing, Check, Flame, LayoutGrid, Plus, Settings, Sparkles } from 'lucide-react';
+import { CalendarDays, ChartNoAxesColumnIncreasing, Check, Flame, Plus, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { sampleHabits } from './habits.js';
 import { Brand, CheckMark, Dialog, HabitIcon } from './ui.jsx';
@@ -14,36 +14,25 @@ function DashboardPreview() {
   return (
     <div className="hero-stage" aria-hidden="true">
       <div className="preview-window">
-        <div className="preview-chrome"><i /><i /><i /></div>
-        <div className="preview-layout">
-          <div className="preview-sidebar">
-            <Brand linked={false} />
-            <span className="preview-nav active"><LayoutGrid /> Today</span>
-            <span className="preview-nav"><Settings /> Settings</span>
-          </div>
-          <div className="preview-main">
-            <div className="preview-greeting">
-              <div><strong>Good morning, Alex!</strong><p>Make time for a small win today.</p></div>
-              <span className="preview-add"><Plus size={13} /> Add habit</span>
+        <div className="preview-greeting">
+          <div><strong>Good morning, Alex!</strong><p>Make time for a small win today.</p></div>
+          <span className="preview-add"><Plus size={13} /> Add habit</span>
+        </div>
+        <div className="preview-card">
+          <div className="preview-card-title"><strong>Today’s habits</strong><span>2 of 3 done</span></div>
+          {sampleHabits.slice(0, 3).map((habit, index) => (
+            <div key={habit.id} className="preview-habit">
+              <HabitIcon name={habit.icon} />
+              <div><strong>{habit.name}</strong><p>{habit.target} days per week</p></div>
+              <CheckMark checked={index < 2} />
             </div>
-            <div className="preview-card">
-              <div className="preview-card-title"><strong>Today’s habits</strong><span>2 of 3 done</span></div>
-              {sampleHabits.slice(0, 3).map((habit, index) => (
-                <div key={habit.id} className="preview-habit">
-                  <HabitIcon name={habit.icon} />
-                  <div><strong>{habit.name}</strong><p>{habit.target} days per week</p></div>
-                  <CheckMark checked={index < 2} />
-                </div>
-              ))}
-            </div>
-            <div className="preview-week">
-              <strong>This week</strong>
-              <div className="preview-bars">{[58, 83, 50, 68, 93, 42, 16].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}</div>
-            </div>
-          </div>
+          ))}
+        </div>
+        <div className="preview-week">
+          <strong>This week</strong>
+          <div className="preview-bars">{[58, 83, 50, 68, 93, 42, 16].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}</div>
         </div>
       </div>
-      <svg className="stage-sparkle" width="39" height="39" viewBox="0 0 40 40" fill="none"><path d="M20 3c0 10-7 17-17 17 10 0 17 7 17 17 0-10 7-17 17-17C27 20 20 13 20 3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
       <div className="floating-streak">
         <span className="floating-streak-icon"><Flame size={23} fill="currentColor" /></span>
         <div><strong>8 day streak!</strong><span>Look at you go.</span></div>
@@ -65,7 +54,7 @@ function SignUp({ onClose, onSignUp }) {
       <form onSubmit={submit} className="dialog-form">
         <label className="field">Name<input name="name" placeholder="Alex Morgan" autoComplete="name" required pattern=".*\S.*" maxLength={80} /></label>
         <label className="field">Email<input name="email" type="email" placeholder="you@example.com" autoComplete="email" required maxLength={254} /></label>
-        <button className="button primary w-full" type="submit">Start tracking <ArrowRight size={17} /></button>
+        <button className="button primary w-full" type="submit">Start tracking</button>
       </form>
     </Dialog>
   );
@@ -91,11 +80,11 @@ export default function Landing({ updateProfile }) {
         <section className="hero">
           <div className="site-container hero-inner">
             <div className="hero-copy">
-              <div className="hero-kicker"><span /><span>Your daily habit tracker</span></div>
-              <h1>Small habits.<br /><span>Big changes.</span></h1>
+              <div className="hero-kicker">Your daily habit tracker</div>
+              <h1>Small habits.<br />Big changes.</h1>
               <p>Build routines that stick, one small win at a time. Track your habits, keep your streak alive, and see how far you’ve come.</p>
-              <button className="button primary hero-cta" onClick={start}>Start for free <ArrowRight size={19} /></button>
-              <Link to="/dashboard" className="hero-demo">Try the dashboard <ArrowRight size={15} /></Link>
+              <div className="hero-actions"><button className="button primary hero-cta" onClick={start}>Start for free</button>
+                <Link to="/dashboard" className="hero-demo">Try the dashboard</Link></div>
               <div className="hero-note"><Check size={15} /> No credit card needed</div>
             </div>
             <DashboardPreview />
@@ -105,7 +94,7 @@ export default function Landing({ updateProfile }) {
         <section className="feature-section" id="features">
           <div className="site-container">
             <div className="section-heading"><h2>Make good habits stick.</h2><p>Small steps are easier when you have a place to track them.</p></div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="feature-strip grid md:grid-cols-3">
               {features.map(({ Icon, color, title, description }) => (
                 <article className="feature-card" key={title}>
                   <span className={`feature-icon icon-${color}`}><Icon size={23} strokeWidth={1.9} /></span>
@@ -117,9 +106,9 @@ export default function Landing({ updateProfile }) {
         </section>
 
         <section className="pricing-section" id="pricing">
-          <div className="site-container">
+          <div className="site-container pricing-layout">
             <div className="section-heading"><h2>Start small, for free.</h2><p>The essentials are free. More ways to track your progress are in the works.</p></div>
-            <div className="pricing-grid grid gap-5 md:grid-cols-2">
+            <div className="pricing-grid grid sm:grid-cols-2">
               <article className="pricing-card">
                 <h3>Free</h3><p>For building your everyday routine.</p>
                 <div className="price"><strong>$0</strong><span> / forever</span></div>
@@ -131,7 +120,7 @@ export default function Landing({ updateProfile }) {
                 <p>For a deeper look at your habits.</p>
                 <div className="price"><strong>$6</strong><span> / month</span></div>
                 <ul>{['Everything in Free', 'Extended activity history', 'More detailed habit insights'].map((item) => <li key={item}><Check size={17} />{item}</li>)}</ul>
-                <button className="button primary w-full" onClick={() => setDialog('pro')}>Explore Pro <ArrowRight size={16} /></button>
+                <button className="button primary w-full" onClick={() => setDialog('pro')}>Explore Pro</button>
               </article>
             </div>
           </div>
@@ -147,7 +136,7 @@ export default function Landing({ updateProfile }) {
       </footer>
 
       {dialog === 'signup' && <SignUp onClose={close} onSignUp={(profile) => { updateProfile(profile); navigate('/dashboard'); }} />}
-      {dialog === 'pro' && <Dialog title="Streakly Pro" description="Pro is in development. You can use the Free plan today to track your habits, streaks, and 12 weeks of progress." onClose={close}><button className="button primary w-full mt-5" onClick={start}>Start for free <ArrowRight size={17} /></button></Dialog>}
+      {dialog === 'pro' && <Dialog title="Streakly Pro" description="Pro is in development. You can use the Free plan today to track your habits, streaks, and 12 weeks of progress." onClose={close}><button className="button primary w-full mt-5" onClick={start}>Start for free</button></Dialog>}
     </div>
   );
 }

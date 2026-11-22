@@ -14,3 +14,13 @@ Work autonomously. Test the app yourself before declaring completion. Do not sto
 
 
 Do not use any skills for this project. Simply use your default abilities.
+
+---
+
+Use the frontend-design skill from here: [https://github.com/anthropics/skills/tree/main/skills/](https://github.com/anthropics/skills/tree/main/skills/), to redesign Streakly.
+
+1. Before changing any code, write your design plan: a palette of 4 to 6 named colors with hex codes, the typefaces and their roles, and the layout concept. Check the plan against the brief and change anything that feels like a generic default.
+2. Apply the plan to every page: typography, color, spacing, buttons, cards, charts, and the 12-week grid.
+3. Keep every feature, page, and piece of sample data exactly as it is. This is a design change only.
+
+Work autonomously. Test the app yourself before declaring completion. Do not stop after redesigning only one page.
