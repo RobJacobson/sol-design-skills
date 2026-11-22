@@ -33,6 +33,7 @@ export function Dialog({ title, description, onClose, children }) {
   useLayoutEffect(() => {
     const dialog = ref.current;
     dialog.showModal();
+    dialog.querySelector('input')?.focus();
     return () => dialog.close();
   }, []);
 

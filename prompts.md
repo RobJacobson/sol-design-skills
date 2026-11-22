@@ -34,3 +34,13 @@ Use the ui-ux-pro-max skill: [https://github.com/nextlevelbuilder/ui-ux-pro-max-
 3. Apply the design system to every page. Keep all features and sample data exactly as they are.
 
 Work autonomously. Test the app yourself before declaring completion. Do not stop after only writing the design system.
+
+---
+
+Run /impeccable ([https://github.com/pbakaus/impeccable](https://github.com/pbakaus/impeccable)) critique on every page of Streakly and give me the scored review.
+
+Then fix the biggest problems it found: run /impeccable typeset on the dashboard, /impeccable layout on the landing page, and finish with /impeccable polish on the whole app.
+
+Keep the design system and all features exactly as they are.
+
+Work autonomously. Do not declare completion until polish is done on every page.

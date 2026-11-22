@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, CalendarDays, ChartNoAxesColumnIncreasing, Check, Flame, Plus, Sparkles, Sunrise } from 'lucide-react';
+import { ArrowRight, CalendarDays, ChartNoAxesColumnIncreasing, Check, Flame, Plus, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { sampleHabits } from './habits.js';
 import { Brand, CheckMark, Dialog, HabitIcon } from './ui.jsx';
@@ -51,7 +51,7 @@ function SignUp({ onClose, onSignUp }) {
   }
 
   return (
-    <Dialog title="Get started with Streakly" description="Create a profile to start tracking habits on this device." onClose={onClose}>
+    <Dialog title="Get started with Streakly" description="Create a profile on this device. New trackers start with sample habits and check-ins." onClose={onClose}>
       <form onSubmit={submit} className="dialog-form">
         <label className="field">Name<input name="name" placeholder="Alex Morgan" autoComplete="name" required pattern=".*\S.*" maxLength={80} /></label>
         <label className="field">Email<input name="email" type="email" placeholder="you@example.com" autoComplete="email" required maxLength={254} /></label>
@@ -81,12 +81,15 @@ export default function Landing({ updateProfile }) {
         <section className="hero">
           <div className="site-container hero-inner">
             <div className="hero-copy">
-              <div className="hero-kicker"><Sunrise size={18} /> Your daily habit tracker</div>
               <h1>Small habits.<br /><em>Big changes.</em></h1>
               <p>Build routines that stick, one small win at a time. Track your habits, keep your streak alive, and see how far you’ve come.</p>
-              <div className="hero-actions"><button className="button primary hero-cta" onClick={start}>Start for free <ArrowRight size={16} /></button>
-                <Link to="/dashboard" className="hero-demo">Try the dashboard</Link></div>
-              <div className="hero-note"><Check size={15} /> No credit card needed</div>
+              <div className="hero-actions">
+                <div>
+                  <button className="button primary hero-cta" onClick={start}>Start for free <ArrowRight size={16} /></button>
+                  <div className="hero-note"><Check size={15} /> No credit card needed</div>
+                </div>
+                <Link to="/dashboard" className="hero-demo">Try the dashboard</Link>
+              </div>
             </div>
             <DashboardPreview />
           </div>
@@ -110,18 +113,18 @@ export default function Landing({ updateProfile }) {
           <div className="site-container pricing-layout">
             <div className="section-heading"><h2>Start small, for free.</h2><p>The essentials are free. More ways to track your progress are in the works.</p></div>
             <div className="pricing-grid grid sm:grid-cols-2">
-              <article className="pricing-card">
+              <article className="pricing-card free-card">
                 <h3>Free</h3><p>For building your everyday routine.</p>
                 <div className="price"><strong>$0</strong><span> / forever</span></div>
                 <ul>{['Daily habit checklist', 'Weekly goals and streaks', '12-week activity history'].map((item) => <li key={item}><Check size={17} />{item}</li>)}</ul>
-                <button className="button secondary w-full" onClick={start}>Get started for free</button>
+                <button className="button primary w-full" onClick={start}>Get started for free</button>
               </article>
-              <article className="pricing-card pro-card">
+              <article className="pricing-card">
                 <div className="flex items-center justify-between gap-2"><h3>Pro</h3><span className="pro-label"><Sparkles size={13} /> In development</span></div>
                 <p>For a deeper look at your habits.</p>
                 <div className="price"><strong>$6</strong><span> / month</span></div>
                 <ul>{['Everything in Free', 'Extended activity history', 'More detailed habit insights'].map((item) => <li key={item}><Check size={17} />{item}</li>)}</ul>
-                <button className="button primary w-full" onClick={() => setDialog('pro')}>Explore Pro</button>
+                <button className="button secondary w-full" onClick={() => setDialog('pro')}>Explore Pro</button>
               </article>
             </div>
           </div>

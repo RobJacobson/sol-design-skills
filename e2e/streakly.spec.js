@@ -25,6 +25,7 @@ test('landing navigation, pricing preview, and sign-up lead to a populated track
 
   await page.getByRole('button', { name: 'Start for free', exact: true }).click();
   const signup = page.getByRole('dialog');
+  await expect(signup.getByRole('textbox', { name: 'Name' })).toBeFocused();
   await signup.getByRole('textbox', { name: 'Name' }).fill('Taylor Reed');
   await signup.getByRole('textbox', { name: 'Email' }).fill('taylor@example.com');
   await signup.getByRole('button', { name: 'Start tracking' }).click();
@@ -75,6 +76,23 @@ test('checking and adding a habit updates the checklist, chart, and saved data',
   await expect(page.getByText('3 of 6 done')).toBeVisible();
 });
 
+test('exact calendar counts are available by pointer and with one keyboard tab stop', async ({ page }) => {
+  await page.goto('/dashboard');
+  const calendar = page.getByRole('table');
+  const today = calendar.getByRole('button', { name: 'Nov 21: 2 check-ins' });
+  await expect(calendar.locator('button[tabindex="0"]')).toHaveCount(1);
+  await today.focus();
+  await page.keyboard.press('ArrowDown');
+  const next = calendar.getByRole('button', { name: 'Nov 22: Upcoming' });
+  await expect(next).toBeFocused();
+  await expect(page.locator('.activity-footer')).toContainText('Nov 22: Upcoming');
+  await page.keyboard.press('ArrowLeft');
+  await expect(calendar.locator('button:focus')).toHaveAccessibleName(/^Nov 15:/);
+  await today.click();
+  await expect(page.locator('.activity-footer')).toContainText('Nov 21: 2 check-ins');
+  await expect(calendar.locator('button[tabindex="0"]')).toHaveCount(1);
+});
+
 test('profile, dark mode, and evening reminders persist across navigation and reloads', async ({ page }) => {
   await page.goto('/settings');
   await expectNoHorizontalOverflow(page);
@@ -84,6 +102,12 @@ test('profile, dark mode, and evening reminders persist across navigation and re
   await expect(email).toHaveValue('alex.morgan@example.com');
   await name.fill('Jamie Rivera');
   await email.fill('jamie@example.com');
+  await expect(page.getByRole('status')).toHaveText('Unsaved changes');
+  await page.getByRole('link', { name: 'Today' }).click();
+  await expect(page.getByRole('heading', { name: 'Hi, Alex' })).toBeVisible();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await expect(name).toHaveValue('Jamie Rivera');
+  await expect(email).toHaveValue('jamie@example.com');
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByRole('status')).toHaveText('Saved');
   await page.getByText('Notifications', { exact: true }).click();

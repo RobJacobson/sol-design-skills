@@ -60,7 +60,7 @@ function App() {
         <Route path="/" element={<Landing updateProfile={updateProfile} />} />
         <Route element={<TrackerLayout profile={data.profile} />}>
           <Route path="/dashboard" element={<Dashboard data={data} today={today} onToggle={toggleHabit} onAdd={addHabit} />} />
-          <Route path="/settings" element={<Settings profile={data.profile} updateProfile={updateProfile} />} />
+          <Route path="/settings" element={<Settings profile={data.profile} updateProfile={updateProfile} storageError={storageError} />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

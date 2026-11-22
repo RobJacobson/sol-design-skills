@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { ArrowUpRight, Bell, CalendarDays, Check, CircleCheck, Flame, LayoutGrid, Moon, Plus, Settings as SettingsIcon, Sun, UserRound } from 'lucide-react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useOutletContext } from 'react-router-dom';
 import { activityWeeks, currentStreak, dateKey, weeklyProgress } from './habits.js';
 import { Brand, CheckMark, Dialog, HabitIcon, habitIcons } from './ui.jsx';
 
 const format = (date, options) => date.toLocaleDateString('en-US', options);
 
 export function TrackerLayout({ profile }) {
+  const [profileDraft, setProfileDraft] = useState(null);
   const initials = profile.name.trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
   return (
     <div className="tracker-shell">
@@ -21,7 +22,7 @@ export function TrackerLayout({ profile }) {
           <Link className="sidebar-profile" to="/settings"><span className="avatar">{initials}</span><span><strong>{profile.name}</strong><small>Free plan</small></span></Link>
         </div>
       </aside>
-      <main className="tracker-main"><Outlet /></main>
+      <main className="tracker-main"><Outlet context={{ profileDraft, setProfileDraft }} /></main>
     </div>
   );
 }
@@ -68,11 +69,17 @@ function HabitList({ habits, completions, week, onToggle }) {
       <ul className="habit-list">
         {habits.map((habit) => {
           const done = completions.includes(habit.id);
+          const days = week.filter((day) => day.includes(habit.id)).length;
           return (
             <li key={habit.id}>
               <label className="habit-row">
                 <HabitIcon name={habit.icon} />
-                <span className="habit-copy"><span className="habit-name">{habit.name}</span><small>{week.filter((day) => day.includes(habit.id)).length} / {habit.target} {habit.target === 1 ? 'day' : 'days'} this week</small></span>
+                <span className="habit-copy">
+                  <span className="habit-name">{habit.name}</span>
+                  <small>{days > habit.target
+                    ? `${days} days this week · Goal: ${habit.target}`
+                    : `${days} / ${habit.target} ${habit.target === 1 ? 'day' : 'days'} this week`}</small>
+                </span>
                 <input type="checkbox" className="sr-only" aria-label={habit.name} checked={done} onChange={() => onToggle(habit.id)} />
                 <CheckMark checked={done} />
               </label>
@@ -122,32 +129,61 @@ function heatLevel(count) {
   return Math.min(4, count);
 }
 
+function activityLabel(day) {
+  const count = day.count === 1 ? '1 check-in' : `${day.count} check-ins`;
+  return `${format(day.date, { month: 'short', day: 'numeric' })}: ${day.future ? 'Upcoming' : count}`;
+}
+
+function navigateCalendar(event) {
+  const cell = event.currentTarget.closest('td');
+  const row = cell.parentElement;
+  const body = row.parentElement;
+  const offsets = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] };
+  const offset = offsets[event.key];
+  if (!offset) return;
+  event.preventDefault();
+  body.rows[row.sectionRowIndex + offset[0]]?.cells[cell.cellIndex + offset[1]]?.querySelector('button')?.focus();
+}
+
 function ActivityGrid({ completions, today }) {
   const weeks = activityWeeks(completions, today);
-  const activeDays = weeks.flat().filter((day) => day.count > 0).length;
+  const days = weeks.flat();
+  const activeDays = days.filter((day) => day.count > 0).length;
   const todayKey = dateKey(today);
+  const [selectedKey, setSelectedKey] = useState(null);
+  const selectedDay = days.find((day) => day.key === selectedKey) ?? days.find((day) => day.key === todayKey);
 
   return (
     <section className="panel activity-panel" aria-labelledby="activity-title">
       <div className="panel-heading activity-heading"><div><h2 id="activity-title">Activity</h2><p>Your last 12 weeks of check-ins</p></div><span className="activity-total"><strong>{activeDays}</strong> active days</span></div>
       <table className="activity-table" aria-label="Habit completions by day over the last 12 weeks">
+        <caption className="sr-only">Select a day to read its check-ins. Use the arrow keys to move between days.</caption>
         <thead><tr><td />{weeks.map(([day], index) => {
           const month = format(day.date, { month: 'short' });
           const showMonth = index === 0 || day.date.getMonth() !== weeks[index - 1][0].date.getMonth();
-          return <th key={day.key} scope="col"><span className="sr-only">Week of {format(day.date, { month: 'long', day: 'numeric' })}</span>{showMonth && <span aria-hidden="true">{month}</span>}</th>;
+          return <th key={day.key} scope="col"><span className="sr-only">Week of {format(day.date, { month: 'long', day: 'numeric' })}</span>{showMonth && <span className="month-label" aria-hidden="true">{month}</span>}</th>;
         })}</tr></thead>
         <tbody>{weeks[0].map(({ date, key }, index) => (
           <tr key={key}>
             <th scope="row">{format(date, { weekday: 'short' })}</th>
             {weeks.map((week) => {
               const day = week[index];
-              const label = `${format(day.date, { month: 'short', day: 'numeric' })}: ${day.future ? 'Upcoming' : `${day.count} ${day.count === 1 ? 'check-in' : 'check-ins'}`}`;
-              return <td key={day.key} title={label} aria-current={day.key === todayKey ? 'date' : undefined}><span className={`heat-cell ${day.future ? 'future-cell' : `heat-${heatLevel(day.count)}`}`}><span className="sr-only">{label}</span></span></td>;
+              const label = activityLabel(day);
+              return (
+                <td key={day.key} title={label} aria-current={day.key === todayKey ? 'date' : undefined}>
+                  <button type="button" className={`heat-cell ${day.future ? 'future-cell' : `heat-${heatLevel(day.count)}`}`}
+                    aria-label={label} tabIndex={selectedDay.key === day.key ? 0 : -1}
+                    onClick={() => setSelectedKey(day.key)} onFocus={() => setSelectedKey(day.key)} onKeyDown={navigateCalendar} />
+                </td>
+              );
             })}
           </tr>
         ))}</tbody>
       </table>
-      <div className="activity-legend" aria-label="Activity scale from fewer to more check-ins"><span>Less</span>{[0, 1, 2, 3, 4].map((level) => <i key={level} className={`heat-${level}`} />)}<span>More</span></div>
+      <div className="activity-footer">
+        <span>{activityLabel(selectedDay)}</span>
+        <div className="activity-legend" aria-label="Activity scale from fewer to more check-ins"><span>Less</span>{[0, 1, 2, 3, 4].map((level) => <i key={level} className={`heat-${level}`} />)}<span>More</span></div>
+      </div>
     </section>
   );
 }
@@ -160,11 +196,11 @@ export function Dashboard({ data, today, onToggle, onAdd }) {
   const firstName = data.profile.name.split(/\s+/)[0];
 
   return (
-    <div className="workspace">
+    <div className="workspace dashboard">
       <header className="workspace-heading">
         <div>
           <p className="workspace-date"><CalendarDays size={16} /> {format(today, { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-          <h1>Hi, {firstName}</h1>
+          <h1 title={`Hi, ${firstName}`}>Hi, {firstName}</h1>
           <p className="workspace-description">What small win will you make time for today?</p>
         </div>
         <button className="button primary" onClick={() => setAdding(true)}><Plus size={19} /> Add habit</button>
@@ -188,22 +224,29 @@ function ToggleRow({ Icon, field, label, description, profile, updateProfile }) 
   return (
     <label className="toggle-row">
       <span className="preference-icon"><Icon size={20} /></span>
-      <span className="preference-copy"><strong>{label}</strong><small>{description}</small></span>
-      <input className="sr-only" type="checkbox" role="switch" checked={profile[field]} aria-label={label} onChange={(event) => updateProfile({ [field]: event.target.checked })} />
+      <span className="preference-copy"><strong>{label}</strong><small id={`${field}-description`}>{description}</small></span>
+      <input className="sr-only" type="checkbox" role="switch" checked={profile[field]} aria-label={label} aria-describedby={`${field}-description`} onChange={(event) => updateProfile({ [field]: event.target.checked })} />
       <span className="toggle-track" aria-hidden="true"><i /></span>
     </label>
   );
 }
 
-export function Settings({ profile, updateProfile }) {
+export function Settings({ profile, updateProfile, storageError }) {
   const [saved, setSaved] = useState(false);
+  const { profileDraft, setProfileDraft } = useOutletContext();
+  const { name, email } = profileDraft ?? profile;
+  const dirty = name !== profile.name || email !== profile.email;
+
+  function changeField(event) {
+    setProfileDraft({ name, email, [event.target.name]: event.target.value });
+    setSaved(false);
+  }
 
   function submit(event) {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const name = data.get('name').trim();
-    if (!name) return;
-    updateProfile({ name, email: data.get('email').trim() });
+    if (!name.trim()) return;
+    updateProfile({ name: name.trim(), email: email.trim() });
+    setProfileDraft(null);
     setSaved(true);
   }
 
@@ -213,10 +256,13 @@ export function Settings({ profile, updateProfile }) {
       <div className="settings-grid">
         <section className="panel settings-panel" aria-labelledby="profile-title">
           <div className="settings-panel-heading"><span className="settings-icon icon-orange"><UserRound size={21} /></span><div><h2 id="profile-title">Profile</h2><p>Update the details you use in Streakly.</p></div></div>
-          <form className="profile-form" onSubmit={submit} onInput={() => setSaved(false)}>
-            <label className="field">Name<input name="name" defaultValue={profile.name} autoComplete="name" required maxLength={80} pattern=".*\S.*" /></label>
-            <label className="field">Email<input name="email" type="email" defaultValue={profile.email} autoComplete="email" required maxLength={254} /></label>
-            <div className="profile-actions"><button type="submit" className="button primary">Save changes</button><span className="save-status" role="status">{saved && <><Check size={16} /> Saved</>}</span></div>
+          <form className="profile-form" onSubmit={submit}>
+            <label className="field">Name<input name="name" value={name} onChange={changeField} autoComplete="name" required maxLength={80} pattern=".*\S.*" /></label>
+            <label className="field">Email<input name="email" type="email" value={email} onChange={changeField} autoComplete="email" required maxLength={254} /></label>
+            <div className="profile-actions">
+              <button type="submit" className="button primary">Save changes</button>
+              <span className="save-status" role="status">{dirty ? 'Unsaved changes' : saved && !storageError && <><Check size={16} /> Saved</>}</span>
+            </div>
           </form>
         </section>
         <section className="panel settings-panel" aria-labelledby="preferences-title">
