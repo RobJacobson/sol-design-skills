@@ -147,7 +147,7 @@ function ActivityGrid({ completions, today }) {
           </tr>
         ))}</tbody>
       </table>
-      <div className="activity-legend" aria-label="Lighter colors represent fewer check-ins"><span>Less</span>{[0, 1, 2, 3, 4].map((level) => <i key={level} className={`heat-${level}`} />)}<span>More</span></div>
+      <div className="activity-legend" aria-label="Activity scale from fewer to more check-ins"><span>Less</span>{[0, 1, 2, 3, 4].map((level) => <i key={level} className={`heat-${level}`} />)}<span>More</span></div>
     </section>
   );
 }

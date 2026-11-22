@@ -1,0 +1,93 @@
+/* Keep digits in personalized headings as legible as chart values. */
+@font-face {
+  font-family: 'Streakly Heading Digits';
+  src: url('@fontsource-variable/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-wght-normal.woff2') format('woff2');
+  font-weight: 200 800;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+}
+
+:root {
+  --workspace: #faf8f1;
+  --surface: #fffdf7;
+  --ink: #233b32;
+  --muted: #57675c;
+  --line: #d9ded1;
+  --control-line: #798574;
+  --accent: #275a46;
+  --accent-hover: #194533;
+  --action-ink: #fffdf7;
+  --soft: #e3eddf;
+  --nav: #223e34;
+  --nav-text: #fffdf7;
+  --nav-active: #e3eddf;
+  --nav-muted: #c9d9c9;
+  --highlight: #f6d5a0;
+  --on-highlight: #583819;
+  --heat-0: #e8ebe1;
+  --heat-1: #cbdcc0;
+  --heat-2: #9abb95;
+  --heat-3: #5e8769;
+  --heat-4: #275a46;
+  --shadow: 0 12px 32px #233b3212;
+  --icon-water: #345f74;
+  --wash-water: #e0edf0;
+  --icon-book: #655581;
+  --wash-book: #eee8f3;
+  --icon-journal: #88502d;
+  --wash-journal: #f7e6cf;
+  --icon-apple: #894e54;
+  --wash-apple: #f5e5df;
+  --sun: #eab470;
+  --sky: #f3e6cb;
+  --hill-far: #cbd7ac;
+  --hill-mid: #a9c19d;
+  --hill-near: #7e9f81;
+  --display: 'Streakly Heading Digits', 'Instrument Serif', Georgia, serif;
+  --body: 'Atkinson Hyperlegible Next Variable', Arial, sans-serif;
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --radius: 18px;
+  --pill: 999px;
+  font-family: var(--body);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-synthesis: none;
+  color: var(--ink);
+  background: var(--workspace);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --workspace: #1b241f;
+  --surface: #242f28;
+  --ink: #f1f3e8;
+  --muted: #bdc9b9;
+  --line: #445246;
+  --control-line: #8b9b89;
+  --accent: #aed3b2;
+  --accent-hover: #c6e4c8;
+  --action-ink: #1e3528;
+  --soft: #334b3a;
+  --nav: #19251e;
+  --highlight: #513e2a;
+  --on-highlight: #f7d9ac;
+  --heat-0: #344138;
+  --heat-1: #4a634f;
+  --heat-2: #64876a;
+  --heat-3: #8bb193;
+  --heat-4: #c2dfc0;
+  --icon-water: #b7dce8;
+  --wash-water: #30454c;
+  --icon-book: #ddcfea;
+  --wash-book: #443d4e;
+  --icon-journal: #eecea6;
+  --wash-journal: #4c4031;
+  --icon-apple: #ecc2c4;
+  --wash-apple: #4e393b;
+}

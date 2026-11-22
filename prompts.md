@@ -24,3 +24,13 @@ Use the frontend-design skill from here: [https://github.com/anthropics/skills/t
 3. Keep every feature, page, and piece of sample data exactly as it is. This is a design change only.
 
 Work autonomously. Test the app yourself before declaring completion. Do not stop after redesigning only one page.
+
+---
+
+Use the ui-ux-pro-max skill: [https://github.com/nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill). Streakly is a habit tracker web app for busy adults. It should feel calm, warm, and motivating, never stressful.
+
+1. Generate a complete design system for this product and save it in the project: the UI style, a color palette with exact hex codes, a heading and body font pairing, a spacing scale, button and card styles, chart colors, and a list of anti-patterns to avoid for this type of app.
+2. Make sure all numbers, stats, and small text use a highly readable font.
+3. Apply the design system to every page. Keep all features and sample data exactly as they are.
+
+Work autonomously. Test the app yourself before declaring completion. Do not stop after only writing the design system.

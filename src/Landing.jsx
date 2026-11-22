@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CalendarDays, ChartNoAxesColumnIncreasing, Check, Flame, Plus, Sparkles } from 'lucide-react';
+import { ArrowRight, CalendarDays, ChartNoAxesColumnIncreasing, Check, Flame, Plus, Sparkles, Sunrise } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { sampleHabits } from './habits.js';
 import { Brand, CheckMark, Dialog, HabitIcon } from './ui.jsx';
@@ -13,6 +13,7 @@ const features = [
 function DashboardPreview() {
   return (
     <div className="hero-stage" aria-hidden="true">
+      <div className="landscape"><i className="sun" /><i className="hill far" /><i className="hill middle" /><i className="hill near" /></div>
       <div className="preview-window">
         <div className="preview-greeting">
           <div><strong>Good morning, Alex!</strong><p>Make time for a small win today.</p></div>
@@ -80,10 +81,10 @@ export default function Landing({ updateProfile }) {
         <section className="hero">
           <div className="site-container hero-inner">
             <div className="hero-copy">
-              <div className="hero-kicker">Your daily habit tracker</div>
-              <h1>Small habits.<br />Big changes.</h1>
+              <div className="hero-kicker"><Sunrise size={18} /> Your daily habit tracker</div>
+              <h1>Small habits.<br /><em>Big changes.</em></h1>
               <p>Build routines that stick, one small win at a time. Track your habits, keep your streak alive, and see how far you’ve come.</p>
-              <div className="hero-actions"><button className="button primary hero-cta" onClick={start}>Start for free</button>
+              <div className="hero-actions"><button className="button primary hero-cta" onClick={start}>Start for free <ArrowRight size={16} /></button>
                 <Link to="/dashboard" className="hero-demo">Try the dashboard</Link></div>
               <div className="hero-note"><Check size={15} /> No credit card needed</div>
             </div>

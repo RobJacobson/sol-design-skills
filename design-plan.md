@@ -1,5 +1,7 @@
 # Streakly redesign plan
 
+This earlier ledger concept is archived. The [current design system](design-system/streakly/MASTER.md) governs the shipped interface.
+
 Streakly should feel like a personal habit ledger. The memorable detail is the inked check mark on a daily record. The design repeats that mark at three scales, from one habit in the checklist to a week of check-ins to the full 12-week grid.
 
 ## Palette
